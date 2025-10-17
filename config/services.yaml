@@ -1,0 +1,16 @@
+imports:
+  - parameters.yaml
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  App\:
+    resource: '%kernel.project_dir%/src/'
+    exclude: '%kernel.project_dir%/src/{Search}/*'
+
+  Symfony\Component\Form\FormRendererEngineInterface: '@twig.form.engine'
+
+  Symfony\Component\Form\FormRendererInterface:
+    class: Symfony\Component\Form\FormRenderer

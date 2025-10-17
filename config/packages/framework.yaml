@@ -1,0 +1,5 @@
+framework:
+  secret: '%env(string:APP_SECRET)%'
+
+  router:
+    default_uri: '%env(string:DEFAULT_URI)%'

@@ -1,0 +1,6 @@
+parameters:
+  app_typesense_api_key: TODO_CHANGE_ME
+  app_typesense_scheme: https
+  app_typesense_host: 127.0.0.1
+  app_typesense_port: 8108
+  app_typesense_path: ''

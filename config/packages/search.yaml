@@ -1,0 +1,16 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  App\Search\:
+    resource: '%kernel.project_dir%/src/Search/'
+    exclude: '%kernel.project_dir%/src/Search/{Model}/*'
+
+  App\Search\Typesense\TypesenseConfig:
+    bind:
+      $apiKey: '%app_typesense_api_key%'
+      $scheme: '%app_typesense_scheme%'
+      $host: '%app_typesense_host%'
+      $port: '%app_typesense_port%'
+      $path: '%app_typesense_path%'
