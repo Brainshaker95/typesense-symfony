@@ -22,7 +22,7 @@ use function Symfony\Component\String\s;
  *
  * @implements CollectionInterface<ArrayRepresentation>
  */
-final class Media implements CollectionInterface
+final readonly class Media implements CollectionInterface
 {
     /**
      * @use CollectionTrait<ArrayRepresentation>
@@ -33,19 +33,19 @@ final class Media implements CollectionInterface
         #[Assert\NotBlank]
         #[Assert\Choice(options: ['image', 'video'])]
         #[Field]
-        public readonly string $type,
+        public string $type,
         #[Assert\NotBlank]
         #[Field(query: true)]
-        public readonly string $title,
+        public string $title,
         #[Assert\NotBlank]
         #[Field(query: true)]
-        public readonly string $author,
+        public string $author,
         #[Field]
-        public readonly ?float $length = null,
+        public ?float $length = null,
         #[Field(query: true)]
-        public readonly ?string $description = null,
+        public ?string $description = null,
         #[Field(query: true)]
-        public readonly ?string $caption = null,
+        public ?string $caption = null,
     ) {}
 
     #[Override]

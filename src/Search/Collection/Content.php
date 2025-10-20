@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @implements CollectionInterface<ArrayRepresentation>
  */
-final class Content implements CollectionInterface
+final readonly class Content implements CollectionInterface
 {
     /**
      * @use CollectionTrait<ArrayRepresentation>
@@ -28,13 +28,13 @@ final class Content implements CollectionInterface
     public function __construct(
         #[Assert\NotBlank]
         #[Field]
-        public readonly string $id,
+        public string $id,
         #[Assert\NotBlank]
         #[Field(query: true, sort: 'asc')]
-        public readonly string $title,
+        public string $title,
         #[Field(query: true, queryPriority: 1, isDefaultSortingField: true, sortPriority: 1)]
-        public readonly string $content,
+        public string $content,
         #[Field(type: ModelField::TYPE_STRING)]
-        public readonly ?string $locale = null,
+        public ?string $locale = null,
     ) {}
 }
