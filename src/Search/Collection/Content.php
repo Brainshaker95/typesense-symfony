@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @phpstan-type ArrayRepresentation array{
  *     id: string,
  *     title: string,
+ *     content: string,
  *     locale?: string,
  * }
  *
