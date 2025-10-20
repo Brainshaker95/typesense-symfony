@@ -17,6 +17,7 @@ use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
 use Symfony\Component\String\AbstractString;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 use Throwable;
 use TypeError;
 
@@ -404,14 +405,18 @@ trait CollectionTrait
             if ($typeName->isEmpty()) {
                 return Field::TYPE_AUTO;
             }
+        } elseif ($typeName->startsWith('?')) {
+            $typeName = $typeName->trimStart('?');
         }
 
         $primitiveTypes = [
-            'int'    => Field::TYPE_INT64,
-            'float'  => Field::TYPE_FLOAT,
-            'bool'   => Field::TYPE_BOOL,
-            'string' => Field::TYPE_STRING,
-            'object' => Field::TYPE_OBJECT,
+            TypeIdentifier::INT->value    => Field::TYPE_INT64,
+            TypeIdentifier::FLOAT->value  => Field::TYPE_FLOAT,
+            TypeIdentifier::STRING->value => Field::TYPE_STRING,
+            TypeIdentifier::OBJECT->value => Field::TYPE_OBJECT,
+            TypeIdentifier::BOOL->value   => Field::TYPE_BOOL,
+            TypeIdentifier::TRUE->value   => Field::TYPE_BOOL,
+            TypeIdentifier::FALSE->value  => Field::TYPE_BOOL,
         ];
 
         $typeName = $typeName->toString();
@@ -458,10 +463,12 @@ trait CollectionTrait
         }
 
         return [
-            'int'    => Field::TYPE_INT64_ARRAY,
-            'float'  => Field::TYPE_FLOAT_ARRAY,
-            'bool'   => Field::TYPE_BOOL_ARRAY,
-            'string' => Field::TYPE_STRING_ARRAY,
+            TypeIdentifier::INT->value    => Field::TYPE_INT64_ARRAY,
+            TypeIdentifier::FLOAT->value  => Field::TYPE_FLOAT_ARRAY,
+            TypeIdentifier::STRING->value => Field::TYPE_STRING_ARRAY,
+            TypeIdentifier::BOOL->value   => Field::TYPE_BOOL_ARRAY,
+            TypeIdentifier::TRUE->value   => Field::TYPE_BOOL_ARRAY,
+            TypeIdentifier::FALSE->value  => Field::TYPE_BOOL_ARRAY,
         ][$typeName->trimEnd('[]')->toString()] ?? Field::TYPE_OBJECT_ARRAY;
     }
 
