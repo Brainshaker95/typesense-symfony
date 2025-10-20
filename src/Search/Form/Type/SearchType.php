@@ -6,7 +6,6 @@ namespace App\Search\Form\Type;
 
 use App\Search\Collection\CollectionInterface;
 use App\Search\Collection\CollectionsTrait;
-use App\Search\Exception\InvalidPropertyException;
 use App\Search\Exception\InvalidSchemaException;
 use App\Search\Model\SearchContext;
 use InvalidArgumentException;
@@ -44,7 +43,6 @@ final class SearchType extends AbstractType
     /**
      * @throws InvalidArgumentException
      * @throws InvalidParameterException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      * @throws MissingMandatoryParametersException
      * @throws RouteNotFoundException

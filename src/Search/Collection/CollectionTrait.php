@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Search\Collection;
 
-use App\Search\Exception\InvalidPropertyException;
 use App\Search\Exception\InvalidSchemaException;
 use App\Search\Exception\UnreachableException;
 use App\Search\Model\Attribute\Field as AttributeField;
@@ -56,7 +55,6 @@ trait CollectionTrait
     }
 
     /**
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     #[Override]
@@ -70,7 +68,6 @@ trait CollectionTrait
     }
 
     /**
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     public static function getSearchParameters(SearchContext $searchContext): array
@@ -91,14 +88,14 @@ trait CollectionTrait
     }
 
     /**
-     * @throws InvalidPropertyException
+     * @throws InvalidSchemaException
      */
     public function getTypesenseId(): string
     {
         /** @phpstan-ignore-next-line function.alreadyNarrowedType */
         return property_exists($this, 'id') && is_string($this->id)
             ? $this->id
-            : throw new InvalidPropertyException(sprintf(
+            : throw new InvalidSchemaException(sprintf(
                 'Class "%s" does not expose a string "id" property and has not overridden the "getTypesenseId" method. Add a public string $id property to the class or implement a custom "getTypesenseId" method.',
                 $this::class,
             ));
@@ -180,7 +177,7 @@ trait CollectionTrait
     /**
      * @return list<Field>
      *
-     * @throws InvalidPropertyException
+     * @throws InvalidSchemaException
      */
     private static function getFields(): array
     {
@@ -218,7 +215,6 @@ trait CollectionTrait
     /**
      * @return ?non-empty-string
      *
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     private static function getQueryBy(): ?string
@@ -247,7 +243,6 @@ trait CollectionTrait
     /**
      * @return ?non-empty-string
      *
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     private static function getSortBy(): ?string
@@ -315,7 +310,6 @@ trait CollectionTrait
     /**
      * @return ?non-empty-string
      *
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     private static function getDefaultSortingField(): ?string
@@ -353,7 +347,7 @@ trait CollectionTrait
      *     instance: AttributeField,
      * }>
      *
-     * @throws InvalidPropertyException
+     * @throws InvalidSchemaException
      */
     private static function getFieldAttributes(): array
     {
@@ -370,7 +364,7 @@ trait CollectionTrait
             }
 
             if (count($fieldAttributes) > 1) {
-                throw new InvalidPropertyException(sprintf(
+                throw new InvalidSchemaException(sprintf(
                     'Property "%s" of class "%s" has multiple "%s" attributes; only one is allowed.',
                     $property->getName(),
                     $class->getName(),

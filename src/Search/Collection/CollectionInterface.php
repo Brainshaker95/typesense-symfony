@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Search\Collection;
 
-use App\Search\Exception\InvalidPropertyException;
 use App\Search\Exception\InvalidSchemaException;
 use App\Search\Model\Schema;
 use App\Search\Model\SearchContext;
@@ -23,7 +22,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 interface CollectionInterface extends ArrayableInterface
 {
     /**
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     public static function getSchema(): Schema;

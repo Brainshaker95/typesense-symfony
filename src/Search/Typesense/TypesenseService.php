@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Search\Typesense;
 
 use App\Search\Collection\CollectionInterface;
-use App\Search\Exception\InvalidPropertyException;
 use App\Search\Exception\InvalidSchemaException;
 use App\Search\Model\SearchContext;
 use App\Search\Model\SearchResult;
@@ -43,7 +42,6 @@ final class TypesenseService
     /**
      * @throws ConfigError
      * @throws HttpClientException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      * @throws TypesenseClientError
      */
@@ -97,7 +95,6 @@ final class TypesenseService
      *
      * @throws ConfigError
      * @throws HttpClientException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      * @throws JsonException
      * @throws TypesenseClientError
@@ -138,7 +135,6 @@ final class TypesenseService
     /**
      * @throws ConfigError
      * @throws HttpClientException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      * @throws JsonException
      * @throws TypesenseClientError
@@ -155,7 +151,6 @@ final class TypesenseService
     /**
      * @throws ConfigError
      * @throws HttpClientException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      * @throws TypesenseClientError
      */
@@ -177,7 +172,6 @@ final class TypesenseService
      *
      * @throws ConfigError
      * @throws HttpClientException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      * @throws JsonException
      * @throws TypesenseClientError
@@ -214,7 +208,6 @@ final class TypesenseService
     /**
      * @throws ConfigError
      * @throws HttpClientException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      * @throws TypesenseClientError
      */
@@ -226,12 +219,12 @@ final class TypesenseService
     }
 
     /**
-     * @throws InvalidPropertyException
+     * @throws InvalidSchemaException
      */
     private function validateId(string $id): void
     {
         if ($id !== urlencode($id)) {
-            throw new InvalidPropertyException(sprintf(
+            throw new InvalidSchemaException(sprintf(
                 'The provided id "%s" should not be needed to be url-encoded.',
                 $id,
             ));
@@ -241,7 +234,6 @@ final class TypesenseService
     /**
      * @throws ConfigError
      * @throws HttpClientException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      * @throws TypesenseClientError
      */
@@ -259,7 +251,6 @@ final class TypesenseService
 
     /**
      * @throws ConfigError
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     private function getTypesenseCollection(CollectionInterface $collection): TypesenseCollection

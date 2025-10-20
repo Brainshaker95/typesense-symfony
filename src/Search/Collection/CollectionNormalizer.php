@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Search\Collection;
 
-use App\Search\Exception\InvalidPropertyException;
 use App\Search\Exception\InvalidSchemaException;
 use Override;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -18,7 +17,6 @@ final class CollectionNormalizer implements DenormalizerInterface, NormalizerInt
     use CollectionsTrait;
 
     /**
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     #[Override]
@@ -36,7 +34,6 @@ final class CollectionNormalizer implements DenormalizerInterface, NormalizerInt
     }
 
     /**
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     #[Override]

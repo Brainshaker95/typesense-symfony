@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Search\Command;
 
 use App\Search\Collection\CollectionInterface;
-use App\Search\Exception\InvalidPropertyException;
 use App\Search\Exception\InvalidSchemaException;
 use App\Search\Repository\RepositoriesTrait;
 use Override;
@@ -37,7 +36,6 @@ final class IndexCommand extends Command
      * @param list<mixed> $collections
      *
      * @throws InvalidOptionException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     public function __invoke(#[Option] array $collections = [], #[Option] bool $truncate = false): int

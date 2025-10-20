@@ -6,7 +6,6 @@ namespace App\Search\Command;
 
 use App\Search\Collection\CollectionInterface;
 use App\Search\Collection\CollectionsTrait;
-use App\Search\Exception\InvalidPropertyException;
 use App\Search\Exception\InvalidSchemaException;
 use App\Search\Exception\UnreachableException;
 use App\Search\Typesense\TypesenseService;
@@ -69,7 +68,6 @@ trait CommandTrait
     /**
      * @return list<string>
      *
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     private function getCollectionNames(): array
@@ -86,7 +84,6 @@ trait CommandTrait
      * @return list<CollectionInterface>
      *
      * @throws InvalidOptionException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     private function getValidCollections(array $collections): array

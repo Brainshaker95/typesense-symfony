@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Search\Command;
 
-use App\Search\Exception\InvalidPropertyException;
 use App\Search\Exception\InvalidSchemaException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -27,7 +26,6 @@ final class ExportCommand extends Command
      * @param list<mixed> $collections
      *
      * @throws InvalidOptionException
-     * @throws InvalidPropertyException
      * @throws InvalidSchemaException
      */
     public function __invoke(#[Option] array $collections = []): int
