@@ -21,6 +21,8 @@ use Throwable;
 use TypeError;
 
 use function array_filter;
+use function array_flip;
+use function array_intersect_key;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -51,12 +53,6 @@ trait CollectionTrait
     use ArrayableTrait {
         ArrayableTrait::toArray as private defaultToArray;
     }
-
-    private const RESERVED_PROPERTY_NAMES = [
-        'schema',
-    ];
-
-    private static Schema $schema;
 
     /**
      * @throws InvalidPropertyException
@@ -129,12 +125,12 @@ trait CollectionTrait
         foreach ($promotedProperties as $promotedProperty) {
             $name = $promotedProperty->getName();
 
-            if (array_key_exists($name, $data)) {
-                self::assertAllowedPropertyName($name);
-
-                $arguments[$name] = $data[$name];
-            } elseif (self::isReservedPropertyName($name)) {
+            if (!self::isFieldName($name)) {
                 continue;
+            }
+
+            if (array_key_exists($name, $data)) {
+                $arguments[$name] = $data[$name];
             } elseif ($promotedProperty->hasDefaultValue()) {
                 $arguments[$name] = $promotedProperty->getDefaultValue();
             } elseif ($promotedProperty->getType()?->allowsNull() ?? false) {
@@ -148,12 +144,12 @@ trait CollectionTrait
         foreach ($properties as $property) {
             $name = $property->getName();
 
-            if (array_key_exists($name, $data)) {
-                self::assertAllowedPropertyName($name);
-
-                $property->setValue($instance, $data[$name]);
-            } elseif (self::isReservedPropertyName($name)) {
+            if (!self::isFieldName($name)) {
                 continue;
+            }
+
+            if (array_key_exists($name, $data)) {
+                $property->setValue($instance, $data[$name]);
             } elseif ($property->hasDefaultValue()) {
                 $property->setValue($instance, $property->getDefaultValue());
             } elseif ($property->getType()?->allowsNull() ?? false) {
@@ -165,12 +161,17 @@ trait CollectionTrait
     }
 
     /**
-     * @throws InvalidPropertyException
+     * @throws InvalidSchemaException
      */
     #[Override]
     public function toArray(): array
     {
-        return array_merge($this->defaultToArray(), [
+        /**
+         * @var TArrayRepresentation $array
+         */
+        $array = array_intersect_key($this->defaultToArray(), array_flip(self::getFieldNames()));
+
+        return array_merge($array, [
             'id' => $this->getTypesenseId(),
         ]);
     }
@@ -211,14 +212,6 @@ trait CollectionTrait
         }
 
         return $fields;
-    }
-
-    /**
-     * @param key-of<TArrayRepresentation> $fieldName
-     */
-    private static function getFieldName(string $fieldName): string
-    {
-        return $fieldName;
     }
 
     /**
@@ -369,10 +362,6 @@ trait CollectionTrait
         $results         = [];
 
         foreach ($properties as $property) {
-            if (self::isReservedPropertyName($property->getName())) {
-                continue;
-            }
-
             $fieldAttributes = $property->getAttributes(AttributeField::class);
 
             if (!isset($fieldAttributes[0])) {
@@ -520,20 +509,49 @@ trait CollectionTrait
     }
 
     /**
-     * @throws InvalidPropertyException
+     * @throws InvalidSchemaException
+     *
+     * @phpstan-assert-if-true key-of<TArrayRepresentation> $name
      */
-    private static function assertAllowedPropertyName(string $name): void
+    private static function isFieldName(string $name): bool
     {
-        if (self::isReservedPropertyName($name)) {
-            throw new InvalidPropertyException(sprintf(
-                'Property name "%s" is reserved and cannot be used.',
-                $name,
-            ));
-        }
+        return in_array($name, self::getFieldNames(), true);
     }
 
-    private static function isReservedPropertyName(string $name): bool
+    /**
+     * @param key-of<TArrayRepresentation> $name
+     *
+     * @throws InvalidSchemaException
+     */
+    private static function getAndAssertFieldName(string $name): string
     {
-        return in_array($name, self::RESERVED_PROPERTY_NAMES, true);
+        // @phpstan-ignore-next-line staticMethod.alreadyNarrowedType
+        if (!self::isFieldName($name)) {
+            throw new InvalidSchemaException(sprintf(
+                'Field with name "%s" does not exist in the schema. Fields are: ["%s"]',
+                $name,
+                implode('", "', self::getFieldNames()),
+            ));
+        }
+
+        return $name;
+    }
+
+    /**
+     * @return list<key-of<TArrayRepresentation>>
+     *
+     * @throws InvalidSchemaException
+     */
+    private static function getFieldNames(): array
+    {
+        /**
+         * @var list<key-of<TArrayRepresentation>> $fieldNames
+         */
+        $fieldNames = array_map(
+            static fn (Field $field): string => $field->name,
+            self::getSchema()->fields,
+        );
+
+        return $fieldNames;
     }
 }
