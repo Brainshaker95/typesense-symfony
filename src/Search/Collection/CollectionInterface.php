@@ -36,7 +36,7 @@ interface CollectionInterface extends ArrayableInterface
     /**
      * @param TArrayRepresentation $data
      */
-    public static function fromArray(array $data): static;
+    public static function fromArray(array $data): self;
 
     /**
      * @return TArrayRepresentation

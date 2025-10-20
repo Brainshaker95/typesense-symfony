@@ -66,8 +66,8 @@ trait CollectionTrait
     public static function getSchema(): Schema
     {
         return new Schema(
-            name: static::getSchemaNameForThisClassName(),
-            fields: static::getFields(),
+            name: self::getSchemaNameForThisClassName(),
+            fields: self::getFields(),
             default_sorting_field: self::getDefaultSortingField(),
         );
     }
@@ -78,8 +78,8 @@ trait CollectionTrait
      */
     public static function getSearchParameters(SearchContext $searchContext): array
     {
-        $queryBy    = static::getQueryBy();
-        $sortBy     = static::getSortBy();
+        $queryBy    = self::getQueryBy();
+        $sortBy     = self::getSortBy();
         $parameters = [];
 
         if ($queryBy !== null) {
@@ -110,12 +110,10 @@ trait CollectionTrait
     /**
      * @throws Throwable
      * @throws TypeError
-     * @throws InvalidPropertyException
      */
-    public static function fromArray(array $data): static
+    public static function fromArray(array $data): self
     {
-        /** @phpstan-ignore-next-line symplify.forbiddenStaticClassConstFetch */
-        $reflection = new ReflectionClass(static::class);
+        $reflection = new ReflectionClass(self::class);
         $arguments  = [];
 
         $properties = array_filter(
@@ -248,8 +246,7 @@ trait CollectionTrait
 
         return implode(',', $queryBy) ?: throw new InvalidSchemaException(sprintf(
             'Class "%s" does not define any queryable fields.',
-            // @phpstan-ignore-next-line symplify.forbiddenStaticClassConstFetch
-            static::class,
+            self::class,
         ));
     }
 
@@ -293,8 +290,7 @@ trait CollectionTrait
             if ($count > 3) {
                 throw new InvalidSchemaException(sprintf(
                     'Class "%s" defines to many sortable fields; only 3 are allowed. Property "%s" would be the fourth sortable field.',
-                    // @phpstan-ignore-next-line symplify.forbiddenStaticClassConstFetch
-                    static::class,
+                    self::class,
                     $attribute['property']->getName(),
                 ));
             }
@@ -346,8 +342,7 @@ trait CollectionTrait
                 if ($count > 1) {
                     throw new InvalidSchemaException(sprintf(
                         'Class "%s" defines more than one default sorting field; only one is allowed.',
-                        // @phpstan-ignore-next-line symplify.forbiddenStaticClassConstFetch
-                        static::class,
+                        self::class,
                     ));
                 }
 
@@ -368,8 +363,7 @@ trait CollectionTrait
      */
     private static function getFieldAttributes(): array
     {
-        /** @phpstan-ignore-next-line symplify.forbiddenStaticClassConstFetch */
-        $class           = new ReflectionClass(static::class);
+        $class           = new ReflectionClass(self::class);
         $fieldAttributes = $class->getAttributes(AttributeField::class);
         $properties      = $class->getProperties();
         $results         = [];
@@ -411,7 +405,7 @@ trait CollectionTrait
      */
     private static function guessTypesenseType(ReflectionProperty $property): string
     {
-        $typeName = static::getTypeNameFromDocComment($property);
+        $typeName = self::getTypeNameFromDocComment($property);
 
         if ($typeName->isEmpty()) {
             if ($property->getType() instanceof ReflectionNamedType) {
@@ -506,8 +500,7 @@ trait CollectionTrait
      */
     private static function getSchemaNameForThisClassName(): string
     {
-        /** @phpstan-ignore-next-line symplify.forbiddenStaticClassConstFetch */
-        $className = s(new ReflectionClass(static::class)->getShortName());
+        $className = s(new ReflectionClass(self::class)->getShortName());
 
         if ($className->endsWith('Collection') && !$className->equalsTo('Collection')) {
             $className = $className->beforeLast('Collection');
