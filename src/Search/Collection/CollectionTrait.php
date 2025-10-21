@@ -434,6 +434,7 @@ trait CollectionTrait
 
         if (!$typeName->endsWith('[]')
             && !$typeName->startsWith('array<')
+            && !$typeName->startsWith('list<')
             && !$typeName->startsWith('non-empty-array<')
             && !$typeName->startsWith('non-empty-list<')) {
             return Field::TYPE_AUTO;
