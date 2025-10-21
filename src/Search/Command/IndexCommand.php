@@ -55,7 +55,7 @@ final class IndexCommand extends Command
         $this->info('Building search index');
 
         $this->withStopwatch(
-            callback: fn () => $this->indexCollections($collections, $delete, $truncate),
+            callback: fn (): int => $this->indexCollections($collections, $delete, $truncate),
             onDone: fn (StopwatchPeriod $period) => $this->success(sprintf('Search index built (%s)', $period)),
         );
 
