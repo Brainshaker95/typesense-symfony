@@ -128,16 +128,22 @@ trait CommandTrait
     }
 
     /**
-     * @param Closure(): void $callback
+     * @template T
+     *
+     * @param Closure(): T $callback
      * @param Closure(StopwatchPeriod $period): void $onDone
+     *
+     * @return T
      */
-    private function withStopwatch(Closure $callback, Closure $onDone): void
+    private function withStopwatch(Closure $callback, Closure $onDone): mixed
     {
         $stopwatch = new Stopwatch();
         $name      = uniqid($this->getName() . '_stopwatch_');
 
         $stopwatch->start($name);
-        $callback();
+
+        $returnValue = $callback();
+
         $stopwatch->stop($name);
 
         $periods = $stopwatch->getEvent($name)->getPeriods();
@@ -148,11 +154,18 @@ trait CommandTrait
         }
 
         $onDone($period);
+
+        return $returnValue;
     }
 
     private function info(string $message): void
     {
         $this->io->writeln(sprintf('<fg=magenta>%s</>', $message));
+    }
+
+    private function note(string $message): void
+    {
+        $this->io->writeln(sprintf('<fg=blue>%s</>', $message));
     }
 
     private function success(string $message): void

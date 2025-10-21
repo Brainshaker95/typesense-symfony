@@ -65,65 +65,58 @@ final class IndexCommand extends Command
                     continue;
                 }
 
-                $data      = $repository->getData();
-                $isValid   = static fn (CollectionInterface $subject): bool => $subject::getSchema()->name === $collectionName;
-                $upserts   = array_values(array_filter($data['upserts'] ?? [], $isValid(...)));
-                $deletions = array_values(array_filter($data['deletions'] ?? [], $isValid(...)));
+            $data = $this->withStopwatch(
+                callback: fn () => $repository->getData($this->output),
+                onDone: fn (StopwatchPeriod $period) => $this->info(sprintf('Done (%s)', $period)),
+            );
 
-                if ($upserts !== []) {
-                    $upsertsCount = count($upserts);
+            $isValid        = static fn (CollectionInterface $subject): bool => $subject::getSchema()->name === $collectionName;
+            $upserts        = array_values(array_filter($data['upserts'] ?? [], $isValid(...)));
+            $deletions      = array_values(array_filter($data['deletions'] ?? [], $isValid(...)));
+            $upsertsCount   = count($upserts);
+            $deletionsCount = count($deletions);
 
-                    $this->info(sprintf(
-                        'Indexing %s subject%s for collection "%s"…',
-                        $upsertsCount,
-                        $upsertsCount === 1 ? '' : 's',
-                        $collectionName,
-                    ));
+            if ($upsertsCount === 0 && $deletionsCount === 0) {
+                $this->note('No data found');
+            }
 
-                    try {
-                        $this->withStopwatch(
-                            callback: fn () => $this->typesenseService->index($upserts),
-                            onDone: fn (StopwatchPeriod $period) => $this->io->writeln(sprintf(
-                                '<fg=magenta>Done (%s)</>',
-                                $period,
-                            )),
-                        );
-                    } catch (Throwable $throwable) {
-                        $this->error($throwable, sprintf(
-                            'Error while indexing collection "%s"',
-                            $collectionName,
-                        ));
+            if ($upsertsCount > 0) {
+                $this->info(sprintf(
+                    'Indexing %s subject%s for collection "%s"',
+                    $upsertsCount,
+                    $upsertsCount === 1 ? '' : 's',
+                    $collectionName,
+                ));
 
-                        return self::FAILURE;
-                    }
+                try {
+                    $this->withStopwatch(
+                        callback: fn () => $this->typesenseService->index($upserts),
+                        onDone: fn (StopwatchPeriod $period) => $this->info(sprintf('Done (%s)', $period)),
+                    );
+                } catch (Throwable $throwable) {
+                    $this->error($throwable, sprintf('Error while indexing collection "%s"', $collectionName));
+
+                    return self::FAILURE;
                 }
+            }
 
-                if ($deletions !== []) {
-                    $deletionsCount = count($deletions);
+            if ($deletionsCount > 0) {
+                $this->info(sprintf(
+                    'Deleting %s subject%s from collection "%s"',
+                    $deletionsCount,
+                    $deletionsCount === 1 ? '' : 's',
+                    $collectionName,
+                ));
 
-                    $this->info(sprintf(
-                        'Deleting %s subject%s from collection "%s"…',
-                        $deletionsCount,
-                        $deletionsCount === 1 ? '' : 's',
-                        $collectionName,
-                    ));
+                try {
+                    $this->withStopwatch(
+                        callback: fn () => $this->typesenseService->deleteDocuments($deletions, 'log'),
+                        onDone: fn (StopwatchPeriod $period) => $this->info(sprintf('Done (%s)', $period)),
+                    );
+                } catch (Throwable $throwable) {
+                    $this->error($throwable, sprintf('Error while deleting from collection "%s"', $collectionName));
 
-                    try {
-                        $this->withStopwatch(
-                            callback: fn () => $this->typesenseService->deleteDocuments($deletions, 'log'),
-                            onDone: fn (StopwatchPeriod $period) => $this->io->writeln(sprintf(
-                                '<fg=magenta>Done (%s)</>',
-                                $period,
-                            )),
-                        );
-                    } catch (Throwable $throwable) {
-                        $this->error($throwable, sprintf(
-                            'Error while deleting from collection "%s"',
-                            $collectionName,
-                        ));
-
-                        return self::FAILURE;
-                    }
+                    return self::FAILURE;
                 }
             }
         }
