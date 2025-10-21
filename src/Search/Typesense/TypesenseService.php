@@ -105,7 +105,6 @@ final class TypesenseService
      * @throws ConfigError
      * @throws HttpClientException
      * @throws InvalidSchemaException
-     * @throws JsonException
      * @throws TypesenseClientError
      */
     public function truncate(CollectionInterface $collection): void
