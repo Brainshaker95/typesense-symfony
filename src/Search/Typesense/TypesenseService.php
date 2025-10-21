@@ -225,7 +225,7 @@ final class TypesenseService
     {
         if ($id !== urlencode($id)) {
             throw new InvalidSchemaException(sprintf(
-                'The provided id "%s" should not be needed to be url-encoded.',
+                'The provided ID "%s" must not require URL encoding.',
                 $id,
             ));
         }
