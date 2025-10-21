@@ -17,8 +17,8 @@ use function sprintf;
 use function Symfony\Component\String\s;
 
 /**
- * @phpstan-type Collection = Content
- * @phpstan-type Transformed = DefaultPage|LocalizedPage
+ * @phpstan-type Collection Content
+ * @phpstan-type Transformed DefaultPage|LocalizedPage
  *
  * @phpstan-implements RepositoryInterface<Collection, Transformed>
  */

@@ -14,8 +14,8 @@ use Override;
 use function array_find;
 
 /**
- * @phpstan-type Collection = Media
- * @phpstan-type Transformed = Image|Video
+ * @phpstan-type Collection Media
+ * @phpstan-type Transformed Image|Video
  *
  * @phpstan-implements RepositoryInterface<Collection, Transformed>
  */
