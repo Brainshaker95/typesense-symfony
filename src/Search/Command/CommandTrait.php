@@ -38,6 +38,10 @@ trait CommandTrait
 
     private const string PSEUDO_COLLECTION_ALL = 'all';
 
+    private InputInterface $input;
+
+    private OutputInterface $output;
+
     private SymfonyStyle $io;
 
     public function __construct(
@@ -48,7 +52,9 @@ trait CommandTrait
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        $this->io = new SymfonyStyle($input, $output);
+        $this->input  = $input;
+        $this->output = $output;
+        $this->io     = new SymfonyStyle($this->input, $this->output);
     }
 
     protected function configure(): void
