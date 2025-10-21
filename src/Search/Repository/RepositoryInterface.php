@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Search\Repository;
 
 use App\Search\Collection\CollectionInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -22,7 +23,7 @@ interface RepositoryInterface
      *     deletions?: list<TCollection>,
      * }
      */
-    public function getData(): array;
+    public function getData(?OutputInterface $output = null): array;
 
     /**
      * @param TCollection $subject

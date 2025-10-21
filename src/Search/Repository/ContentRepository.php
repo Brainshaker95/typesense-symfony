@@ -11,6 +11,7 @@ use App\Search\Collection\CollectionInterface;
 use App\Search\Collection\Content;
 use Override;
 use Random\RandomException;
+use Symfony\Component\Console\Output\OutputInterface;
 
 use function random_int;
 use function sprintf;
@@ -38,7 +39,7 @@ final readonly class ContentRepository implements RepositoryInterface
      * @throws RandomException
      */
     #[Override]
-    public function getData(): array
+    public function getData(?OutputInterface $output = null): array
     {
         $pages     = $this->dataRepository->getPages();
         $subjects  = [];

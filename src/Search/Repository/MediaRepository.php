@@ -10,6 +10,7 @@ use App\RealWorld\Repository\DataRepository;
 use App\Search\Collection\CollectionInterface;
 use App\Search\Collection\Media;
 use Override;
+use Symfony\Component\Console\Output\OutputInterface;
 
 use function array_find;
 
@@ -32,7 +33,7 @@ final readonly class MediaRepository implements RepositoryInterface
     }
 
     #[Override]
-    public function getData(): array
+    public function getData(?OutputInterface $output = null): array
     {
         $images   = $this->dataRepository->getImages();
         $videos   = $this->dataRepository->getVideos();
