@@ -42,7 +42,8 @@ final class CollectionNormalizer implements DenormalizerInterface, NormalizerInt
         return is_string($data)
             ? array_find(
                 $this->collections,
-                static fn (CollectionInterface $collection): bool => $collection::getSchema()->name === $data,
+                static fn (CollectionInterface $collection): bool => $collection instanceof $type
+                    && $collection::getSchema()->name === $data,
             )
             : null;
     }
