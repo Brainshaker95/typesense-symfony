@@ -50,7 +50,7 @@ final class CollectionNormalizer implements DenormalizerInterface, NormalizerInt
     #[Override]
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return $type === CollectionInterface::class;
+        return is_string($data) && $type === CollectionInterface::class;
     }
 
     #[Override]
