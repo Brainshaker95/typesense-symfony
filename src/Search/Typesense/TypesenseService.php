@@ -46,8 +46,9 @@ final class TypesenseService
      * @throws HttpClientException
      * @throws InvalidSchemaException
      * @throws TypesenseClientError
+     * @throws ValidationFailedException
      */
-    public function search(SearchContext $searchContext): SearchResult
+    public function search(SearchContext $searchContext, bool $doValidateSubjects = true): SearchResult
     {
         $collection          = $searchContext->collection;
         $typesenseCollection = $this->getOrCreateTypesenseCollection($collection);
@@ -61,28 +62,7 @@ final class TypesenseService
 
         $hits       = array_key_exists('hits', $result) && is_array($result['hits']) ? array_values($result['hits']) : [];
         $totalCount = array_key_exists('found', $result) && is_int($result['found']) && $result['found'] >= 0 ? $result['found'] : 0;
-        $items      = [];
-
-        foreach ($this->repositories as $repository) {
-            if (!$repository->supports($collection)) {
-                continue;
-            }
-
-            foreach ($hits as $hit) {
-                $hit      = is_array($hit) ? $hit : [];
-                $document = array_key_exists('document', $hit) ? $hit['document'] : [];
-
-                /**
-                 * @var array<non-empty-string, mixed> $document
-                 */
-                $document = is_array($document) ? $document : [];
-                $item     = $repository->transform($collection::fromArray($document), $hit);
-
-                if ($item !== null) {
-                    $items[] = $item;
-                }
-            }
-        }
+        $items      = $this->hydrateAndTransformHits($collection, $hits, $doValidateSubjects);
 
         return new SearchResult(
             items: $items,
@@ -162,7 +142,6 @@ final class TypesenseService
      * @throws ConfigError
      * @throws HttpClientException
      * @throws InvalidSchemaException
-     * @throws JsonException
      * @throws TypesenseClientError
      * @throws ValidationFailedException
      */
@@ -254,6 +233,51 @@ final class TypesenseService
     }
 
     /**
+     * @param list<mixed> $hits
+     *
+     * @return list<mixed>
+     *
+     * @throws ValidationFailedException
+     */
+    private function hydrateAndTransformHits(CollectionInterface $collection, array $hits, bool $doValidateSubjects = true): array
+    {
+        $items = [];
+
+        foreach ($this->repositories as $repository) {
+            if (!$repository->supports($collection)) {
+                continue;
+            }
+
+            foreach ($hits as $hit) {
+                $hit      = is_array($hit) ? $hit : [];
+                $document = array_key_exists('document', $hit) ? $hit['document'] : [];
+
+                /**
+                 * @var array<non-empty-string, mixed> $document
+                 */
+                $document = is_array($document) ? $document : [];
+                $subject  = $collection::fromArray($document);
+
+                if ($doValidateSubjects) {
+                    $this->validateSubject($subject);
+                }
+
+                $item = $repository->transform($subject, $hit);
+
+                if ($item !== null) {
+                    if ($doValidateSubjects) {
+                        $this->validateSubject($subject);
+                    }
+
+                    $items[] = $item;
+                }
+            }
+        }
+
+        return $items;
+    }
+
+    /**
      * @param list<CollectionInterface> $subjects
      *
      * @return array<non-empty-string, non-empty-list<CollectionInterface>> $subjectsByCollection
@@ -267,17 +291,25 @@ final class TypesenseService
 
         foreach ($subjects as $subject) {
             if ($doValidate) {
-                $violations = $this->validator->validate($subject);
-
-                if (count($violations) > 0) {
-                    throw new ValidationFailedException($subject, $violations);
-                }
+                $this->validateSubject($subject);
             }
 
             $subjectsByCollection[$subject::getSchema()->name][] = $subject;
         }
 
         return $subjectsByCollection;
+    }
+
+    /**
+     * @throws ValidationFailedException
+     */
+    private function validateSubject(CollectionInterface $subject): void
+    {
+        $violations = $this->validator->validate($subject);
+
+        if (count($violations) > 0) {
+            throw new ValidationFailedException($subject, $violations);
+        }
     }
 
     /**

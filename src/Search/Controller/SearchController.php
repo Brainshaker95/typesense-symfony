@@ -23,6 +23,7 @@ use Symfony\Component\Serializer\Encoder\JsonEncode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Typesense\Exceptions\TypesenseClientError;
 
@@ -56,6 +57,7 @@ final class SearchController extends AbstractController
      * @throws InvalidArgumentException
      * @throws NotFoundHttpException
      * @throws TypesenseClientError
+     * @throws ValidationFailedException
      */
     #[Route(
         name: 'app_search',
