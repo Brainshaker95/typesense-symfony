@@ -24,9 +24,11 @@ use function array_key_exists;
 use function array_map;
 use function array_values;
 use function count;
+use function implode;
 use function is_array;
 use function is_int;
 use function sprintf;
+use function Symfony\Component\String\s;
 use function urlencode;
 
 final class TypesenseService
@@ -102,21 +104,8 @@ final class TypesenseService
      */
     public function index(CollectionInterface|array $subjects): void
     {
-        if (!is_array($subjects)) {
-            $subjects = [$subjects];
-        }
-
-        $subjectsByCollection = [];
-
-        foreach ($subjects as $subject) {
-            $violations = $this->validator->validate($subject);
-
-            if (count($violations) > 0) {
-                throw new ValidationFailedException($subject, $violations);
-            }
-
-            $subjectsByCollection[$subject::getSchema()->name][] = $subject;
-        }
+        $subjects             = is_array($subjects) ? $subjects : [$subjects];
+        $subjectsByCollection = $this->getSubjectsByCollection($subjects);
 
         foreach ($subjectsByCollection as $subjectsForCollection) {
             $mappedSubjects = array_map(
@@ -179,29 +168,60 @@ final class TypesenseService
      */
     public function deleteDocuments(CollectionInterface|array $subjects, string $behaviorOnNotFound = 'throw'): void
     {
-        if (!is_array($subjects)) {
-            $subjects = [$subjects];
+        $subjects      = is_array($subjects) ? $subjects : [$subjects];
+        $singleSubject = count($subjects) === 1 ? $subjects[0] : null;
+
+        if ($singleSubject instanceof CollectionInterface) {
+            $this->deleteDocument($singleSubject, $behaviorOnNotFound);
+
+            return;
         }
 
-        foreach ($subjects as $subject) {
-            $typesenseCollection = $this->getOrCreateTypesenseCollection($subject);
-            $id                  = $subject->getTypesenseId();
+        $subjectsByCollection = $this->getSubjectsByCollection($subjects, doValidate: false);
 
-            $this->validateId($id);
+        foreach ($subjectsByCollection as $subjectsForCollection) {
+            $subjectIds = array_map(
+                fn (CollectionInterface $subject): string => $this->getValidatedId($subject),
+                $subjectsForCollection,
+            );
 
-            try {
-                $typesenseCollection->documents->offsetGet($id)->delete();
-            } catch (ObjectNotFound $exception) {
-                if ($behaviorOnNotFound === 'throw') {
-                    throw $exception;
-                }
+            $typesenseCollection = $this->getOrCreateTypesenseCollection($subjectsForCollection[0]);
 
-                if ($behaviorOnNotFound === 'log') {
-                    $this->logger->error($exception->getMessage(), [
-                        'exception' => $exception,
-                    ]);
+            $response = $typesenseCollection->documents->delete([
+                'filter_by' => 'id:[' . implode(',', self::escapeAll($subjectIds)) . ']',
+            ]);
+
+            if (($response['num_deleted'] ?? 0) === 0) {
+                try {
+                    throw new ObjectNotFound(sprintf('Could not find any document for given IDs: %s', implode(', ', $subjectIds)));
+                } catch (ObjectNotFound $exception) {
+                    $this->handleObjectNotFound($exception, $behaviorOnNotFound);
                 }
             }
+        }
+    }
+
+    /**
+     * @template TSubject of CollectionInterface
+     * @template TBehaviorOnNotFound of 'none'|'throw'|'log'
+     *
+     * @param TSubject $subject
+     * @param TBehaviorOnNotFound $behaviorOnNotFound
+     *
+     * @throws ConfigError
+     * @throws HttpClientException
+     * @throws InvalidSchemaException
+     * @throws TypesenseClientError
+     */
+    public function deleteDocument(CollectionInterface $subject, string $behaviorOnNotFound = 'throw'): void
+    {
+        $subjectId           = $this->getValidatedId($subject);
+        $typesenseCollection = $this->getOrCreateTypesenseCollection($subject);
+
+        try {
+            $typesenseCollection->documents->offsetGet($subjectId)->delete();
+        } catch (ObjectNotFound $exception) {
+            $this->handleObjectNotFound($exception, $behaviorOnNotFound);
         }
     }
 
@@ -218,17 +238,83 @@ final class TypesenseService
         return $typesenseCollection->documents->export();
     }
 
+    public static function escape(string $value): string
+    {
+        return '`' . s($value)->replaceMatches('/`/', '``')->toString() . '`';
+    }
+
+    /**
+     * @param list<string> $values
+     *
+     * @return list<string>
+     */
+    public static function escapeAll(array $values): array
+    {
+        return array_map(self::escape(...), $values);
+    }
+
+    /**
+     * @param list<CollectionInterface> $subjects
+     *
+     * @return array<non-empty-string, non-empty-list<CollectionInterface>> $subjectsByCollection
+     *
+     * @throws InvalidSchemaException
+     * @throws ValidationFailedException
+     */
+    private function getSubjectsByCollection(array $subjects, bool $doValidate = true): array
+    {
+        $subjectsByCollection = [];
+
+        foreach ($subjects as $subject) {
+            if ($doValidate) {
+                $violations = $this->validator->validate($subject);
+
+                if (count($violations) > 0) {
+                    throw new ValidationFailedException($subject, $violations);
+                }
+            }
+
+            $subjectsByCollection[$subject::getSchema()->name][] = $subject;
+        }
+
+        return $subjectsByCollection;
+    }
+
+    /**
+     * @template TBehavior of 'none'|'throw'|'log'
+     *
+     * @param TBehavior $behavior
+     *
+     * @throws ObjectNotFound
+     */
+    private function handleObjectNotFound(ObjectNotFound $exception, string $behavior): void
+    {
+        if ($behavior === 'throw') {
+            throw $exception;
+        }
+
+        if ($behavior === 'log') {
+            $this->logger->error($exception->getMessage(), [
+                'exception' => $exception,
+            ]);
+        }
+    }
+
     /**
      * @throws InvalidSchemaException
      */
-    private function validateId(string $id): void
+    private function getValidatedId(CollectionInterface $subject): string
     {
+        $id = $subject->getTypesenseId();
+
         if ($id !== urlencode($id)) {
             throw new InvalidSchemaException(sprintf(
                 'The provided ID "%s" must not require URL encoding.',
                 $id,
             ));
         }
+
+        return $id;
     }
 
     /**
