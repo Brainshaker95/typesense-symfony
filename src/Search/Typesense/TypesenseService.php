@@ -108,14 +108,14 @@ final class TypesenseService
         $subjectsByCollection = $this->getSubjectsByCollection($subjects);
 
         foreach ($subjectsByCollection as $subjectsForCollection) {
-            $mappedSubjects = array_map(
+            $dataToImport = array_map(
                 static fn (CollectionInterface $subject): array => $subject->toArray(),
                 $subjectsForCollection,
             );
 
             $typesenseCollection = $this->getOrCreateTypesenseCollection($subjectsForCollection[0]);
 
-            $typesenseCollection->documents->import($mappedSubjects, [
+            $typesenseCollection->documents->import($dataToImport, [
                 'action' => 'upsert',
             ]);
         }
