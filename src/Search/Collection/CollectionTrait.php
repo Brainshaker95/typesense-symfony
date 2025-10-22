@@ -292,23 +292,16 @@ trait CollectionTrait
             }
         }
 
-        $index               = 0;
         $defaultSortingField = self::getDefaultSortingField();
 
-        while ($count < 3) {
-            if ($index === 0) {
-                $sortBy = ['_text_match:desc', ...$sortBy];
-            } elseif ($defaultSortingField !== null) {
-                $sortBy[] = $defaultSortingField . ':desc';
-            }
-
+        if ($count < 3) {
+            $sortBy = ['_text_match:desc', ...$sortBy];
             $count += 1;
+        }
 
-            if ($index === 1) {
-                break;
-            }
-
-            $index += 1;
+        if ($count < 3 && $defaultSortingField !== null) {
+            $sortBy[] = $defaultSortingField . ':desc';
+            $count += 1;
         }
 
         return implode(',', $sortBy) ?: null;
