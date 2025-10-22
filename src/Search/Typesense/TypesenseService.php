@@ -20,6 +20,7 @@ use Typesense\Exceptions\ConfigError;
 use Typesense\Exceptions\ObjectNotFound;
 use Typesense\Exceptions\TypesenseClientError;
 
+use function addcslashes;
 use function array_key_exists;
 use function array_map;
 use function array_values;
@@ -28,7 +29,6 @@ use function implode;
 use function is_array;
 use function is_int;
 use function sprintf;
-use function Symfony\Component\String\s;
 use function urlencode;
 
 final class TypesenseService
@@ -218,7 +218,7 @@ final class TypesenseService
 
     public static function escape(string $value): string
     {
-        return '`' . s($value)->replaceMatches('/`/', '``')->toString() . '`';
+        return '"' . addcslashes($value, '"') . '"';
     }
 
     /**
