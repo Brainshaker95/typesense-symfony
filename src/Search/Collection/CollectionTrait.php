@@ -234,6 +234,13 @@ trait CollectionTrait
             $attributes,
         );
 
+        if (in_array('id', $queryBy, true)) {
+            throw new InvalidSchemaException(sprintf(
+                'Collection "%s" defines the "id" property as queryable; the "id" field cannot be used in "query_by".',
+                self::class,
+            ));
+        }
+
         return implode(',', $queryBy) ?: throw new InvalidSchemaException(sprintf(
             'Collection "%s" does not define any queryable fields.',
             self::class,
