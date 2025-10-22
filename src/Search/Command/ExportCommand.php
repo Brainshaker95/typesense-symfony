@@ -16,7 +16,7 @@ use function sprintf;
 
 #[AsCommand(
     name: 'app:search:export',
-    description: 'Builds the search index for the given collection(s)',
+    description: 'Exports the search index for the given collection(s)',
 )]
 final class ExportCommand extends Command
 {

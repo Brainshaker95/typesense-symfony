@@ -62,7 +62,7 @@ trait CommandTrait
         $this
             ->addOption(
                 name: 'collections',
-                description: 'The collection(s) to index',
+                description: 'The collection(s) to handle',
                 shortcut: 'c',
                 mode: InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
                 default: [self::PSEUDO_COLLECTION_ALL],
