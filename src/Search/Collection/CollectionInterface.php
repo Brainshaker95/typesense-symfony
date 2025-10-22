@@ -10,6 +10,8 @@ use App\Search\Model\SearchContext;
 use App\Search\Model\Support\ArrayableInterface;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Throwable;
+use TypeError;
 
 /**
  * @template TArrayRepresentation of array<non-empty-string, mixed> = array<non-empty-string, mixed>
@@ -28,19 +30,29 @@ interface CollectionInterface extends ArrayableInterface
 
     /**
      * @return array<string, string>
+     *
+     * @throws InvalidSchemaException
      */
     public static function getSearchParameters(SearchContext $searchContext): array;
 
     /**
      * @param TArrayRepresentation $data
+     *
+     * @throws Throwable
+     * @throws TypeError
      */
     public static function fromArray(array $data): self;
 
     /**
      * @return TArrayRepresentation
+     *
+     * @throws InvalidSchemaException
      */
     #[Override]
     public function toArray(): array;
 
+    /**
+     * @throws InvalidSchemaException
+     */
     public function getTypesenseId(): string;
 }
