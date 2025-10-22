@@ -96,7 +96,7 @@ trait CollectionTrait
         return property_exists($this, 'id') && is_string($this->id)
             ? $this->id
             : throw new InvalidSchemaException(sprintf(
-                'Class "%s" does not expose a string "id" property and has not overridden the "getTypesenseId" method. Add a public string $id property to the class or implement a custom "getTypesenseId" method.',
+                'Collection "%s" does not expose a string "id" property and has not overridden the "getTypesenseId" method. Add a string "id" property to the class or implement a custom "getTypesenseId" method.',
                 $this::class,
             ));
     }
@@ -235,7 +235,7 @@ trait CollectionTrait
         );
 
         return implode(',', $queryBy) ?: throw new InvalidSchemaException(sprintf(
-            'Class "%s" does not define any queryable fields.',
+            'Collection "%s" does not define any queryable fields.',
             self::class,
         ));
     }
@@ -278,7 +278,7 @@ trait CollectionTrait
 
             if ($count > 3) {
                 throw new InvalidSchemaException(sprintf(
-                    'Class "%s" defines to many sortable fields; only 3 are allowed. Property "%s" would be the fourth sortable field.',
+                    'Collection "%s" defines to many sortable fields; only 3 are allowed. Property "%s" would be the fourth sortable field.',
                     self::class,
                     $attribute['property']->getName(),
                 ));
@@ -329,7 +329,7 @@ trait CollectionTrait
 
                 if ($count > 1) {
                     throw new InvalidSchemaException(sprintf(
-                        'Class "%s" defines more than one default sorting field; only one is allowed.',
+                        'Collection "%s" defines more than one default sorting field; only one is allowed.',
                         self::class,
                     ));
                 }
