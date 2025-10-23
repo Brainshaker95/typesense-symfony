@@ -42,7 +42,7 @@ final class ExportCommand extends Command
             ));
 
             try {
-                $this->io->writeln($this->typesenseService->export($collection));
+                $this->output->writeln($this->typesenseService->export($collection));
             } catch (Throwable $throwable) {
                 $this->error($throwable, sprintf(
                     'Error while exporting collection "%s"',
@@ -53,7 +53,7 @@ final class ExportCommand extends Command
             }
 
             if ($index < $collectionCount - 1) {
-                $this->io->writeln('');
+                $this->output->writeln('');
             }
         }
 

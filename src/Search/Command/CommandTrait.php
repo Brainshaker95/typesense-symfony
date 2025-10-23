@@ -14,7 +14,6 @@ use Symfony\Component\Console\Exception\InvalidOptionException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Stopwatch\StopwatchPeriod;
 use Throwable;
@@ -42,8 +41,6 @@ trait CommandTrait
 
     private OutputInterface $output;
 
-    private SymfonyStyle $io;
-
     public function __construct(
         private readonly TypesenseService $typesenseService,
     ) {
@@ -54,7 +51,6 @@ trait CommandTrait
     {
         $this->input  = $input;
         $this->output = $output;
-        $this->io     = new SymfonyStyle($this->input, $this->output);
     }
 
     protected function configure(): void
@@ -160,36 +156,36 @@ trait CommandTrait
 
     private function info(string $message): void
     {
-        $this->io->writeln(sprintf('<fg=magenta>%s</>', $message));
+        $this->output->writeln(sprintf('<fg=magenta>%s</>', $message));
     }
 
     private function note(string $message): void
     {
-        $this->io->writeln(sprintf('<fg=blue>%s</>', $message));
+        $this->output->writeln(sprintf('<fg=blue>%s</>', $message));
     }
 
     private function success(string $message): void
     {
-        $this->io->writeln(sprintf('<fg=green>%s</>', $message));
+        $this->output->writeln(sprintf('<fg=green>%s</>', $message));
     }
 
     private function error(string|Throwable $messageOrThrowable, ?string $messagePrefix = null): void
     {
         $message = match (true) {
             is_string($messageOrThrowable) => $messageOrThrowable,
-            $this->io->isVerbose()         => sprintf(
+            $this->output->isVerbose()     => sprintf(
                 '%s (Code: %s): %s%sThrown at %s%s',
                 $messageOrThrowable::class,
                 $messageOrThrowable->getCode(),
                 $messageOrThrowable->getMessage(),
                 PHP_EOL,
                 $messageOrThrowable->getFile() . ':' . $messageOrThrowable->getLine(),
-                $this->io->isVeryVerbose() ? (PHP_EOL . $messageOrThrowable->getTraceAsString()) : '',
+                $this->output->isVeryVerbose() ? (PHP_EOL . $messageOrThrowable->getTraceAsString()) : '',
             ),
             default => $messageOrThrowable->getMessage() . ' <comment>(Retry with -v or -vv for more details)</comment>',
         };
 
-        $this->io->writeln(sprintf(
+        $this->output->writeln(sprintf(
             '<fg=red>%s%s</>',
             is_string($messagePrefix) ? $messagePrefix . ' – ' : '',
             $message,
