@@ -34,10 +34,12 @@
     "phpdocumentor/reflection-docblock": "^5.6.3",
     "phpstan/phpdoc-parser": "^2.3",
     "symfony/console": "7.3.*",
+    "symfony/debug-bundle": "7.3.*",
     "symfony/dotenv": "7.3.*",
     "symfony/flex": "^2.8.2",
     "symfony/form": "7.3.*",
     "symfony/framework-bundle": "7.3.*",
+    "symfony/html-sanitizer": "7.3.*",
     "symfony/http-client": "^7.3.4",
     "symfony/monolog-bundle": "^3.10",
     "symfony/property-access": "7.3.*",
@@ -45,10 +47,11 @@
     "symfony/runtime": "7.3.*",
     "symfony/serializer": "7.3.*",
     "symfony/string": "7.3.*",
+    "symfony/translation": "^7.3",
     "symfony/twig-bundle": "7.3.*",
     "symfony/validator": "7.3.*",
     "symfony/yaml": "7.3.*",
-    "twig/twig": "^3.21",
+    "twig/twig": "^3.21.1",
     "typesense/typesense-php": "^5.1"
   },
   "require-dev": {
@@ -75,7 +78,9 @@
     "symfony/polyfill-php74": "*",
     "symfony/polyfill-php80": "*",
     "symfony/polyfill-php81": "*",
-    "symfony/polyfill-php82": "*"
+    "symfony/polyfill-php82": "*",
+    "symfony/polyfill-php83": "*",
+    "symfony/polyfill-php84": "*"
   },
   "conflict": {
     "symfony/symfony": "*"

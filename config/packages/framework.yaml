@@ -1,5 +1,6 @@
 framework:
   secret: '%env(string:APP_SECRET)%'
+  default_locale: '%env(string:DEFAULT_LOCALE)%'
 
   router:
     default_uri: '%env(string:DEFAULT_URI)%'
