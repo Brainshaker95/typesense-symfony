@@ -51,7 +51,7 @@ trait CollectionTrait
      * @use ArrayableTrait<TArrayRepresentation>
      */
     use ArrayableTrait {
-        ArrayableTrait::toArray as private defaultToArray;
+        ArrayableTrait::toArray as private traitToArray;
     }
 
     /**
@@ -167,7 +167,7 @@ trait CollectionTrait
         /**
          * @var TArrayRepresentation $array
          */
-        $array = array_intersect_key($this->defaultToArray(), array_flip(self::getFieldNames()));
+        $array = array_intersect_key($this->traitToArray(), array_flip(self::getFieldNames()));
 
         return array_merge($array, [
             'id' => $this->getTypesenseId(),
@@ -351,10 +351,9 @@ trait CollectionTrait
      */
     private static function getFieldAttributes(): array
     {
-        $class           = new ReflectionClass(self::class);
-        $fieldAttributes = $class->getAttributes(AttributeField::class);
-        $properties      = $class->getProperties();
-        $results         = [];
+        $class      = new ReflectionClass(self::class);
+        $properties = $class->getProperties();
+        $results    = [];
 
         foreach ($properties as $property) {
             $fieldAttributes = $property->getAttributes(AttributeField::class);
@@ -431,6 +430,12 @@ trait CollectionTrait
                 ? Field::TYPE_OBJECT_ARRAY
                 : Field::TYPE_OBJECT;
         }
+
+        // TODO: add support for:
+        // - positive-int
+        // - negative-int
+        // - non-empty-string
+        // - etc...
 
         if (!$typeName->endsWith('[]')
             && !$typeName->startsWith('array<')

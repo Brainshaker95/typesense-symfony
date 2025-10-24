@@ -19,7 +19,7 @@ use function sprintf;
 final class Schema implements ArrayableInterface
 {
     use ArrayableTrait {
-        ArrayableTrait::toArray as private defaultToArray;
+        ArrayableTrait::toArray as private traitToArray;
     }
 
     /**
@@ -84,7 +84,7 @@ final class Schema implements ArrayableInterface
     #[Override]
     public function toArray(): array
     {
-        return array_merge($this->defaultToArray(), [
+        return array_merge($this->traitToArray(), [
             'fields' => array_map(
                 static fn (Field $field): array => $field->toArray(),
                 $this->fields,
