@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Typesense Symfony</title>
+
+    {%- block styles -%}
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5">
+
+      <style>
+        :root {
+          --header-height: 3rem;
+        }
+
+        body {
+          scroll-behavior: smooth;
+        }
+
+        .htmx-indicator {
+          width: 50px;
+          aspect-ratio: 1;
+          border-radius: 50%;
+          background: radial-gradient(farthest-side, var(--color-primary) 94%, #0000) top / 6px 6px no-repeat,
+            conic-gradient(#0000 30%, var(--color-primary));
+          -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 6px), #000 0);
+          animation: htmx-indiactor 1s infinite linear;
+        }
+
+        @keyframes htmx-indiactor {
+          to {
+            transform: rotate(1turn);
+          }
+        }
+      </style>
+    {%- endblock -%}
+
+    {%- block scripts -%}
+      <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js" defer></script>
+
+      <script type="module" defer>
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        const setTheme = () => {
+          document.body.dataset.theme = mediaQuery.matches ? 'dark' : 'light';
+        };
+
+        setTheme();
+        mediaQuery.addEventListener('change', setTheme);
+
+        for (const form of document.forms) {
+          form.querySelector('[data-form-submit]').classList.add('sr-only');
+
+          form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            form.submit();
+          });
+        }
+      </script>
+    {%- endblock -%}
+  </head>
+
+  <body {{ attrs({
+    class: [
+      'min-h-screen',
+      'flex',
+      'flex-col',
+      '[&_a[id]]:scroll-mt-[var(--header-height)]',
+      '[&_[data-page]]:scroll-mt-[var(--header-height)]',
+    ],
+  }) }}>
+    <header class="sticky top-0 flex items-center bg-base-300 z-30 h-[var(--header-height)]">
+      <div class="container mx-auto px-4">
+        Typesense Symfony
+      </div>
+    </header>
+
+    <main class="grow">
+      {%- block content -%}{%- endblock -%}
+    </main>
+  </body>
+</html>

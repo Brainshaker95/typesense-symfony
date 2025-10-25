@@ -1,0 +1,16 @@
+{%- extends 'layout.html.twig' -%}
+
+{%- block content -%}
+  <div class="container mx-auto px-4 flex flex-col gap-6 py-6" data-page>
+    {%- include 'page/search/form.html.twig' with {
+      form,
+    } only -%}
+
+    <div class="flex flex-col gap-6" aria-live="polite" data-search-result>
+      {%- include 'page/search/result.html.twig' with {
+        search_result,
+        pagination,
+      } only -%}
+    </div>
+  </div>
+{%- endblock -%}

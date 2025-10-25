@@ -1,0 +1,20 @@
+<a {{ attrs({
+  href: modify_query_string({
+    (page_parameter_name): page,
+  }),
+  class: [
+    'btn',
+    'btn-outline',
+    'btn-primary',
+    is_current|default ? 'btn-active',
+    is_disabled|default ? 'pointer-events-none',
+    is_arrow|default and is_disabled ? 'btn-disabled',
+  ],
+  title: label,
+  'aria-label': label,
+  'aria-current': is_current|default ? 'page' : false,
+  'aria-disabled': is_disabled|default ? 'true' : false,
+  tabindex: is_disabled|default ? '-1' : false,
+}) }}>
+  {{- content|raw -}}
+</a>

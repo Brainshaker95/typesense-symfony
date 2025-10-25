@@ -1,0 +1,59 @@
+{%- set p = pagination.toTemplateVariables -%}
+
+{%- if p.is_visible -%}
+  {%- set do_render_all_pages = do_render_all_pages is defined ? do_render_all_pages : false -%}
+  {%- set page_parameter_name = page_parameter_name is defined ? page_parameter_name : 'page' -%}
+
+  <nav {{ attrs({
+    'hx-boost': 'true',
+    'hx-target': '[data-search-result]',
+    'hx-swap': 'innerHTML show:[data-page]:top',
+    'hx-indicator': '[data-htmx-indicator]',
+  }) }}>
+    <ul class="join gap-x-1">
+      <li class="join-item">
+        {%- include 'shared/pagination/page.html.twig' with {
+          page_parameter_name,
+          page: p.previous_page,
+          is_disabled: p.page <= 1,
+          is_arrow: true,
+          content: '&lt;',
+          label: 'pagination.go_to_previous_page'|trans,
+        } only -%}
+      </li>
+
+      {%- for index in p.first_page..p.page_count -%}
+        {%- set is_visible = pagination.isPageVisible(index) -%}
+
+        {%- if is_visible or do_render_all_pages -%}
+          <li {{ attrs({
+            class: 'join-item',
+            'aria-hidden': is_visible ? false : 'true',
+          }) }}>
+            {%- include 'shared/pagination/page.html.twig' with {
+              page_parameter_name,
+              page: index,
+              content: index,
+              is_current: index == p.page,
+              is_disabled: index == p.page,
+              label: 'pagination.go_to_page'|trans({
+                '{{ page }}': index,
+              }),
+            } only -%}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+
+      <li class="join-item">
+        {%- include 'shared/pagination/page.html.twig' with {
+          page_parameter_name,
+          page: p.next_page,
+          is_disabled: p.page >= p.page_count,
+          is_arrow: true,
+          content: '&gt;',
+          label: 'pagination.go_to_next_page'|trans,
+        } only -%}
+      </li>
+    </ul>
+  </nav>
+{%- endif -%}

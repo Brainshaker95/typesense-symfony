@@ -1,0 +1,13 @@
+<div class="grid grid-cols-3 gap-4">
+  {%- for item in items -%}
+    {%- if item is instanceof('App\\RealWorld\\DataToIndex\\DefaultPage') or item is instanceof('App\\RealWorld\\DataToIndex\\LocalizedPage') -%}
+      {%- include 'page/search/item/content.html.twig' with {
+        item,
+      } only -%}
+    {%- elseif item is instanceof('App\\RealWorld\\DataToIndex\\Image') or item is instanceof('App\\RealWorld\\DataToIndex\\Video') -%}
+      {%- include 'page/search/item/media.html.twig' with {
+        item,
+      } only -%}
+    {%- endif -%}
+  {%- endfor -%}
+</div>

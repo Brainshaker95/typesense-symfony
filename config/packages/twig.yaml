@@ -1,2 +1,5 @@
 twig:
   strict_variables: true
+
+  form_themes:
+    - shared/form-theme.html.twig

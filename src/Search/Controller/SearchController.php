@@ -4,59 +4,50 @@ declare(strict_types=1);
 
 namespace App\Search\Controller;
 
+use App\Controller\ControllerTrait;
 use App\Search\Collection\CollectionsTrait;
+use App\Search\Exception\CollectionNotFoundException;
+use App\Search\Exception\InvalidSchemaException;
 use App\Search\Form\Type\SearchType;
+use App\Search\Model\Pagination;
 use App\Search\Model\SearchContext;
 use App\Search\Typesense\TypesenseService;
 use Http\Client\Exception as HttpClientException;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Form\FormRendererInterface;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpFoundation\Exception\UnexpectedValueException;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\Encoder\JsonEncode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Throwable;
 use Typesense\Exceptions\TypesenseClientError;
 
-use function array_map;
-use function count;
-use function explode;
-use function implode;
-use function reset;
-use function sprintf;
-use function Symfony\Component\String\s;
-
-use const JSON_PRETTY_PRINT;
-use const PHP_EOL;
+use function array_diff;
+use function array_filter;
+use function is_array;
 
 #[AsController]
 final class SearchController extends AbstractController
 {
     use CollectionsTrait;
+    use ControllerTrait;
 
     public function __construct(
-        private readonly FormFactoryInterface $formFactory,
-        private readonly FormRendererInterface $formRenderer,
-        private readonly SerializerInterface $serializer,
+        private readonly NormalizerInterface $normalizer,
         private readonly TypesenseService $typesenseService,
-        private readonly ValidatorInterface $validator,
     ) {}
 
     /**
-     * @throws ExceptionInterface
+     * @throws CollectionNotFoundException
      * @throws HttpClientException
      * @throws InvalidArgumentException
-     * @throws NotFoundHttpException
      * @throws TypesenseClientError
+     * @throws UnexpectedValueException
      * @throws ValidationFailedException
      */
     #[Route(
@@ -64,92 +55,66 @@ final class SearchController extends AbstractController
         path: '/search',
         methods: [
             Request::METHOD_GET,
-            Request::METHOD_POST,
         ],
     )]
-    public function __invoke(Request $request, #[MapQueryString] SearchContext $searchContext): Response
+    public function __invoke(Request $request): Response
     {
+        $searchContext = SearchContext::fromParameterBag($request->query, $this->collections, $this->validator);
+
+        if ($this->doesClientAccept($request, 'application/json')) {
+            $searchResult = $this->typesenseService->search($searchContext);
+
+            return $this->jsonValidated([
+                'searchResult' => $searchResult,
+                'pagination'   => Pagination::fromSearch($searchContext, $searchResult),
+            ]);
+        }
+
+        $redirectResponse = $this->getCorrectedQueryRedirectResponse($request, $searchContext);
+
+        if ($redirectResponse instanceof Response) {
+            return $redirectResponse;
+        }
+
         $searchResult = $this->typesenseService->search($searchContext);
+        $pagination   = Pagination::fromSearch($searchContext, $searchResult);
+        $formView     = $this->createForm(SearchType::class, $searchContext)->createView();
 
-        if ($request->isMethod(Request::METHOD_POST)) {
-            return $this->jsonValidated($searchResult);
-        }
+        $templateParameters = [
+            'form'          => $formView,
+            'search_result' => $searchResult,
+            'pagination'    => $pagination,
+        ];
 
-        $collection = reset($this->collections);
-
-        if ($collection === false) {
-            throw $this->createNotFoundException('No collection found.');
-        }
-
-        $form = $this->formFactory->createNamed('', SearchType::class, $searchContext);
-
-        $request->query->set('collection', $request->query->get('c'));
-        $request->query->remove('c');
-        $request->query->set('query', $request->query->get('q'));
-        $request->query->remove('q');
-        $form->handleRequest($request);
-
-        $formView = $form->createView();
-
-        $renderedForm = $this->formRenderer->renderBlock($formView, 'form_start', [
-            'attr' => [
-                'novalidate' => '',
-            ],
-        ])
-        . $this->formRenderer->renderBlock($formView, 'form_end');
-
-        $renderedResult = s(sprintf('<strong>Total items: %s</strong>', $searchResult->totalCount));
-
-        if ($searchResult->totalCount > 0) {
-            $renderedResult = $renderedResult
-                ->append('<pre>')
-                ->append('[')
-                ->append(PHP_EOL)
-            ;
-
-            foreach ($searchResult->items as $item) {
-                $json = $this->serializer->serialize($item, JsonEncoder::FORMAT, [
-                    JsonEncode::OPTIONS => JSON_PRETTY_PRINT,
-                ]);
-
-                $json = implode(PHP_EOL, array_map(
-                    static fn (string $line): string => s($line)
-                        ->replaceMatches('/^(?: {4})+/', '  ')
-                        ->prepend('  ')
-                        ->toString(),
-                    explode(PHP_EOL, $json),
-                ));
-
-                $renderedResult = $renderedResult->append($json);
-            }
-
-            $renderedResult = $renderedResult
-                ->append(PHP_EOL)
-                ->append(']')
-                ->append(PHP_EOL)
-                ->append('</pre>')
-            ;
-        }
-
-        return new Response($renderedForm . $renderedResult);
+        return $request->headers->get('HX-Request') === null
+            ? $this->render('page/search.html.twig', $templateParameters, new Response(headers: ['Vary' => 'HX-Request']))
+            : $this->render('page/search/result.html.twig', $templateParameters, new Response(headers: ['Vary' => 'HX-Request']));
     }
 
-    private function jsonValidated(mixed $value): Response
+    /**
+     * @throws BadRequestException
+     * @throws InvalidSchemaException
+     * @throws UnexpectedValueException
+     */
+    private function getCorrectedQueryRedirectResponse(Request $request, SearchContext $searchContext): ?RedirectResponse
     {
-        $violations = $this->validator->validate($value);
-
-        if (count($violations) > 0) {
-            $messages = [];
-
-            foreach ($violations as $violation) {
-                $messages[$violation->getPropertyPath()] = $violation->getMessage();
-            }
-
-            return $this->json([
-                'errors' => $messages,
-            ], Response::HTTP_BAD_REQUEST);
+        try {
+            $normalizedSearchContext = $this->normalizer->normalize($searchContext);
+        } catch (Throwable) {
+            $normalizedSearchContext = [];
         }
 
-        return $this->json($value);
+        $normalizedSearchContext = is_array($normalizedSearchContext)
+            ? $normalizedSearchContext
+            : [];
+
+        $requestQueryParameters = array_filter(
+            $request->query->all(),
+            static fn (mixed $value): bool => !is_array($value),
+        );
+
+        return array_diff($requestQueryParameters, $normalizedSearchContext) === []
+            ? null
+            : $this->redirectToRoute($request->attributes->getString('_route'), $normalizedSearchContext);
     }
 }

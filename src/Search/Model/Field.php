@@ -52,7 +52,10 @@ final class Field implements ArrayableInterface
         public ?bool $infix = null,
         public ?string $locale = null {
             get => $this->locale;
-            // @throws InvalidSchemaException
+
+            /**
+             * @throws InvalidSchemaException
+             */
             set(?string $locale) {
                 $this->locale = $locale;
 

@@ -1,0 +1,16 @@
+<div class="join items-end gap-4">
+  {{- form(form, {
+    attr: {
+      class: 'join flex-wrap items-end gap-4',
+      'hx-boost': 'true',
+      'hx-trigger': 'change, input changed delay:200ms from:([name="' ~ form.query.vars.full_name ~ '"])',
+      'hx-target': '[data-search-result]',
+      'hx-indicator': '[data-htmx-indicator]',
+      'hx-swap': 'innerHTML show:unset',
+    },
+  }) -}}
+
+  <div data-htmx-indicator>
+    <div class="htmx-indicator"></div>
+  </div>
+</div>

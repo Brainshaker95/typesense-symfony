@@ -1,0 +1,41 @@
+{%- extends 'form_div_layout.html.twig' -%}
+
+{%- block form_row -%}
+  {%- set row_attr = row_attr|merge({
+    class: ('join join-vertical grow' ~ row_attr.class|default)|trim,
+  }) -%}
+
+  {{- parent() -}}
+{%- endblock form_row -%}
+
+{%- block form_label -%}
+  {%- set label_attr = label_attr|merge({
+    class: ('label ' ~ label_attr.class|default)|trim,
+  }) -%}
+
+  {{- parent() -}}
+{%- endblock form_label -%}
+
+{%- block form_widget_simple -%}
+  {%- set attr = attr|merge({
+    class: ('input input-primary ' ~ attr.class|default)|trim,
+  }) -%}
+
+  {{- parent() -}}
+{%- endblock form_widget_simple -%}
+
+{%- block choice_widget_collapsed -%}
+  {%- set attr = attr|merge({
+    class: ('select select-primary ' ~ attr.class|default)|trim,
+  }) -%}
+
+  {{- parent() -}}
+{%- endblock choice_widget_collapsed -%}
+
+{%- block button_widget -%}
+  {%- set attr = attr|merge({
+    class: ('btn btn-outline btn-primary ' ~ attr.class|default)|trim,
+  }) -%}
+
+  {{- parent() -}}
+{%- endblock button_widget -%}

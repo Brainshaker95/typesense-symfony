@@ -1,0 +1,14 @@
+{%- if search_result.totalCount > 0 -%}
+  {%- include 'page/search/items.html.twig' with {
+    items: search_result.items,
+  } only -%}
+
+  {%- include 'shared/pagination.html.twig' with {
+    pagination,
+    page_parameter_name: 'p',
+  } only -%}
+{%- else -%}
+  <div role="alert" class="alert bg-base-100 border-primary italic">
+    {{- 'page.search.no_search_results'|trans -}}
+  </div>
+{%- endif -%}

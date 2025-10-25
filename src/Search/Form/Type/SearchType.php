@@ -55,40 +55,51 @@ final class SearchType extends AbstractType
             $this->collections,
         );
 
-        $builder
-            ->setAction($this->urlGenerator->generate('app_search'))
-            ->setMethod(Request::METHOD_GET)
-            ->add('collection', Type\ChoiceType::class, [
-                'choices' => array_combine($collectionChoices, $collectionChoices),
-            ])
-            ->add('query', Type\SearchType::class, [
-                'empty_data' => '',
-            ])
-            ->add('page', Type\NumberType::class, [
-                'empty_data' => 1,
-            ])
-            ->add('pageSize', Type\ChoiceType::class, [
-                'choices' => array_combine(SearchContext::PAGE_SIZES, SearchContext::PAGE_SIZES),
-            ])
-            ->add('submit', Type\SubmitType::class)
-        ;
-
-        $builder->get('collection')->addModelTransformer(new CallbackTransformer(
+        $collectionTransformer = new CallbackTransformer(
             transform: static fn (?CollectionInterface $collection): ?string => $collection instanceof CollectionInterface ? $collection::getSchema()->name : null,
             reverseTransform: fn (?string $collectionName): ?CollectionInterface => array_find(
                 $this->collections,
                 static fn (CollectionInterface $collection): bool => $collection::getSchema()->name === $collectionName,
             ),
-        ));
+        );
+
+        $builder
+            ->setAction($this->urlGenerator->generate('app_search'))
+            ->setMethod(Request::METHOD_GET)
+            ->add('collection', Type\ChoiceType::class, [
+                'label'        => 'form.label.collection',
+                'choices'      => $collectionChoices,
+                'choice_label' => static fn (string $collectionChoice): string => 'form.label.collection.' . $collectionChoice,
+            ])
+            ->add('query', Type\SearchType::class, [
+                'required' => false,
+                'label'    => 'form.label.query',
+            ])
+            ->add('pageSize', Type\ChoiceType::class, [
+                'label'   => 'form.label.page_size',
+                'choices' => array_combine(SearchContext::PAGE_SIZES, SearchContext::PAGE_SIZES),
+            ])
+            ->add('submit', Type\SubmitType::class, [
+                'label' => 'form.label.search',
+                'attr'  => [
+                    'data-form-submit' => '',
+                ],
+            ])
+        ;
+
+        $builder
+            ->get('collection')
+            ->addModelTransformer($collectionTransformer)
+        ;
     }
 
     #[Override]
     public function finishView(FormView $view, FormInterface $form, array $options): void
     {
-        // @phpstan-ignore typePerfect.noArrayAccessOnObject
-        $view['collection']->vars['full_name'] = 'c';
-        // @phpstan-ignore typePerfect.noArrayAccessOnObject
-        $view['query']->vars['full_name'] = 'q';
+        $view->offsetGet('collection')->vars['full_name'] = SearchContext::SERIALIZED_NAME_COLLECTION;
+        $view->offsetGet('query')->vars['full_name']      = SearchContext::SERIALIZED_NAME_QUERY;
+        $view->offsetGet('pageSize')->vars['full_name']   = SearchContext::SERIALIZED_NAME_PAGE_SIZE;
+        $view->offsetGet('submit')->vars['full_name']     = '';
     }
 
     /**
@@ -99,8 +110,15 @@ final class SearchType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver
+            ->setRequired('data')
             ->setAllowedValues('data_class', SearchContext::class)
             ->setDefault('data_class', SearchContext::class)
         ;
+    }
+
+    #[Override]
+    public function getBlockPrefix(): string
+    {
+        return '';
     }
 }
