@@ -72,13 +72,11 @@ trait CollectionTrait
      */
     public static function getSearchParameters(SearchContext $searchContext): array
     {
-        $queryBy    = self::getQueryBy();
-        $sortBy     = self::getSortBy();
-        $parameters = [];
+        $parameters = [
+            'query_by' => self::getQueryBy(),
+        ];
 
-        if ($queryBy !== null) {
-            $parameters['query_by'] = $queryBy;
-        }
+        $sortBy = self::getSortBy();
 
         if ($sortBy !== null) {
             $parameters['sort_by'] = $sortBy;
@@ -213,11 +211,11 @@ trait CollectionTrait
     }
 
     /**
-     * @return ?non-empty-string
+     * @return non-empty-string
      *
      * @throws InvalidSchemaException
      */
-    private static function getQueryBy(): ?string
+    private static function getQueryBy(): string
     {
         $attributes = array_values(array_filter(
             self::getFieldAttributes(),

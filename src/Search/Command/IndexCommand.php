@@ -70,15 +70,15 @@ final class IndexCommand extends Command
         $this
             ->addOption(
                 name: 'delete',
-                description: 'Delete the given collection(s)',
                 shortcut: 'd',
                 mode: InputOption::VALUE_NONE,
+                description: 'Delete the given collection(s)',
             )
             ->addOption(
                 name: 'truncate',
-                description: 'Truncate the given collection(s) before indexing',
                 shortcut: 't',
                 mode: InputOption::VALUE_NONE,
+                description: 'Truncate the given collection(s) before indexing',
             )
         ;
     }

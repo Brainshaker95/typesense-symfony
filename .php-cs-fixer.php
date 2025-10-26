@@ -26,11 +26,9 @@ return new Config()
     ->setRiskyAllowed(true)
     ->registerCustomFixers(new Fixers())
     ->setRules([
+        '@auto:risky'                                           => true,
         '@PhpCsFixer'                                           => true,
         '@PhpCsFixer:risky'                                     => true,
-        '@PHP82Migration:risky'                                 => true,
-        '@PHP84Migration'                                       => true,
-        '@PHPUnit100Migration:risky'                            => true,
         'binary_operator_spaces'                                => ['operators' => \array_fill_keys(['=', '=>', '??=', '.=', '+=', '-=', '*=', '/=', '%=', '**=', '&=', '|=', '^=', '<<=', '>>='], 'align_single_space_minimal')],
         'blank_line_before_statement'                           => ['statements' => ['break', 'case', 'continue', 'declare', 'default', 'do', 'exit', 'for', 'foreach', 'goto', 'if', 'include', 'include_once', 'phpdoc', 'require', 'require_once', 'return', 'switch', 'throw', 'try', 'while', 'yield', 'yield_from']],
         'class_attributes_separation'                           => ['elements' => ['case' => 'none', 'method' => 'one', 'property' => 'one', 'trait_import' => 'none']],
@@ -48,6 +46,7 @@ return new Config()
         'increment_style'                                       => ['style' => 'post'],
         'mb_str_functions'                                      => true,
         'modernize_strpos'                                      => true,
+        'multiline_promoted_properties'                         => true,
         'native_constant_invocation'                            => true,
         'native_function_invocation'                            => ['include' => ['@all']],
         'ordered_interfaces'                                    => true,
@@ -75,7 +74,6 @@ return new Config()
         'yoda_style'                                            => ['equal' => false, 'identical' => false, 'less_and_greater' => false],
         Fixer\ForeachUseValueFixer::name()                      => true,
         Fixer\MultilineCommentOpeningClosingAloneFixer::name()  => true,
-        Fixer\MultilinePromotedPropertiesFixer::name()          => true,
         Fixer\NoDoctrineMigrationsGeneratedCommentFixer::name() => true,
         Fixer\NoDuplicatedArrayKeyFixer::name()                 => true,
         Fixer\NoDuplicatedImportsFixer::name()                  => true,

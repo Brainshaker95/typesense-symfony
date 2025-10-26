@@ -6,6 +6,7 @@ namespace App\Search\Collection;
 
 use App\Search\Exception\InvalidSchemaException;
 use Override;
+use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -16,15 +17,14 @@ final class CollectionNormalizer implements DenormalizerInterface, NormalizerInt
 {
     use CollectionsTrait;
 
-    /**
-     * @throws InvalidSchemaException
-     */
     #[Override]
     public function normalize(mixed $data, ?string $format = null, array $context = []): ?string
     {
-        return $data instanceof CollectionInterface
-            ? $data::getSchema()->name
-            : null;
+        try {
+            return $data instanceof CollectionInterface ? $data::getSchema()->name : null;
+        } catch (InvalidSchemaException $exception) {
+            throw new LogicException('Attempted to normalize collection with invalid schema.', previous: $exception);
+        }
     }
 
     #[Override]
@@ -33,19 +33,19 @@ final class CollectionNormalizer implements DenormalizerInterface, NormalizerInt
         return $data instanceof CollectionInterface;
     }
 
-    /**
-     * @throws InvalidSchemaException
-     */
     #[Override]
     public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
     {
-        return is_string($data)
-            ? array_find(
-                $this->collections,
-                static fn (CollectionInterface $collection): bool => $collection instanceof $type
-                    && $collection::getSchema()->name === $data,
-            )
-            : null;
+        try {
+            return is_string($data)
+                ? array_find(
+                    $this->collections,
+                    static fn (CollectionInterface $collection): bool => $collection instanceof $type && $collection::getSchema()->name === $data,
+                )
+                : null;
+        } catch (InvalidSchemaException $exception) {
+            throw new LogicException('Attempted to denormalize collection with invalid schema.', previous: $exception);
+        }
     }
 
     #[Override]

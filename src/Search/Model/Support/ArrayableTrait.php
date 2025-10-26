@@ -34,7 +34,7 @@ trait ArrayableTrait
                     }
 
                     return array_map(
-                        static fn (mixed $item) => $item instanceof ArrayableInterface ? $item->toArray() : $item,
+                        static fn (mixed $item): mixed => $item instanceof ArrayableInterface ? $item->toArray() : $item,
                         $value,
                     );
                 },

@@ -36,7 +36,7 @@ final readonly class UrlExtension
             : [];
 
         $queryParameters = array_replace($currentQueryParameters, array_map(
-            static fn ($value): string => match (true) {
+            static fn (bool|int|float|string|Stringable $value): string => match (true) {
                 is_bool($value) => $value ? '1' : '0',
                 default         => (string) $value,
             },

@@ -12,7 +12,6 @@ use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameVariableToMatchNewTypeRector;
 use Rector\Naming\Rector\Foreach_\RenameForeachValueVariableToMatchExprVariableRector;
 use Rector\PostRector\Rector\UnusedImportRemovingPostRector;
-use Rector\Strict\Rector\Ternary\DisallowedShortTernaryRuleFixerRector;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -40,15 +39,14 @@ return RectorConfig::configure()
     ->withRootFiles()
     ->withPaths($paths)
     ->withPreparedSets(
+        deadCode: true,
         codeQuality: true,
         codingStyle: true,
-        deadCode: true,
-        earlyReturn: true,
-        instanceOf: true,
-        naming: true,
-        privatization: true,
         typeDeclarations: true,
-        strictBooleans: true,
+        privatization: true,
+        naming: true,
+        instanceOf: true,
+        earlyReturn: true,
         rectorPreset: true,
         phpunitCodeQuality: true,
         doctrineCodeQuality: true,
@@ -57,7 +55,6 @@ return RectorConfig::configure()
     )
     ->withSkip([
         CatchExceptionNameMatchingTypeRector::class,
-        DisallowedShortTernaryRuleFixerRector::class,
         LocallyCalledStaticMethodToNonStaticRector::class,
         NewlineAfterStatementRector::class,
         NewlineBeforeNewAssignSetRector::class,

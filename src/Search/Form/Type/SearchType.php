@@ -24,6 +24,7 @@ use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use ValueError;
 
 use function array_combine;
 use function array_find;
@@ -46,6 +47,7 @@ final class SearchType extends AbstractType
      * @throws InvalidSchemaException
      * @throws MissingMandatoryParametersException
      * @throws RouteNotFoundException
+     * @throws ValueError
      */
     #[Override]
     public function buildForm(FormBuilderInterface $builder, array $options): void

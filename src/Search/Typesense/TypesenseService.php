@@ -158,11 +158,7 @@ final class TypesenseService
         $subjectsByCollection = $this->getSubjectsByCollection($subjects, doValidate: false);
 
         foreach ($subjectsByCollection as $subjectsForCollection) {
-            $subjectIds = array_map(
-                fn (CollectionInterface $subject): string => $this->getValidatedId($subject),
-                $subjectsForCollection,
-            );
-
+            $subjectIds          = array_map($this->getValidatedId(...), $subjectsForCollection);
             $typesenseCollection = $this->getOrCreateTypesenseCollection($subjectsForCollection[0]);
 
             $response = $typesenseCollection->documents->delete([
