@@ -400,20 +400,11 @@ trait CollectionTrait
             $typeName = $typeName->trimStart('?');
         }
 
-        $primitiveTypes = [
-            TypeIdentifier::INT->value    => Field::TYPE_INT64,
-            TypeIdentifier::FLOAT->value  => Field::TYPE_FLOAT,
-            TypeIdentifier::STRING->value => Field::TYPE_STRING,
-            TypeIdentifier::OBJECT->value => Field::TYPE_OBJECT,
-            TypeIdentifier::BOOL->value   => Field::TYPE_BOOL,
-            TypeIdentifier::TRUE->value   => Field::TYPE_BOOL,
-            TypeIdentifier::FALSE->value  => Field::TYPE_BOOL,
-        ];
-
+        $typeMap  = self::getTypeMap();
         $typeName = $typeName->toString();
 
-        if (array_key_exists($typeName, $primitiveTypes)) {
-            return $primitiveTypes[$typeName];
+        if (array_key_exists($typeName, $typeMap)) {
+            return $typeMap[$typeName];
         }
 
         // @phpstan-ignore-next-line symplify.forbiddenFuncCall
@@ -423,17 +414,15 @@ trait CollectionTrait
 
         $typeName = s($typeName);
 
+        if ($typeName->startsWith('int<')) {
+            return Field::TYPE_INT64;
+        }
+
         if ($typeName->startsWith('array{')) {
             return $typeName->endsWith('[]')
                 ? Field::TYPE_OBJECT_ARRAY
                 : Field::TYPE_OBJECT;
         }
-
-        // TODO: add support for:
-        // - positive-int
-        // - negative-int
-        // - non-empty-string
-        // - etc...
 
         if (!$typeName->endsWith('[]')
             && !$typeName->startsWith('array<')
@@ -452,7 +441,7 @@ trait CollectionTrait
         $firstMatch = s(is_string($matches[0] ?? null) ? $matches[0] : '');
 
         if ($firstMatch->containsAny(',')
-            && in_array($typeName->toString(), ['array-key', 'int'], true)) {
+            && in_array($typeName->toString(), ['array-key', 'int', 'positive-int', 'non-negative-int'], true)) {
             $typeName = $firstMatch->trimEnd('>')->afterLast(',')->trim();
 
             if ($typeName->endsWith('[]')) {
@@ -460,33 +449,28 @@ trait CollectionTrait
             }
         }
 
-        return [
-            TypeIdentifier::INT->value    => Field::TYPE_INT64_ARRAY,
-            TypeIdentifier::FLOAT->value  => Field::TYPE_FLOAT_ARRAY,
-            TypeIdentifier::STRING->value => Field::TYPE_STRING_ARRAY,
-            TypeIdentifier::BOOL->value   => Field::TYPE_BOOL_ARRAY,
-            TypeIdentifier::TRUE->value   => Field::TYPE_BOOL_ARRAY,
-            TypeIdentifier::FALSE->value  => Field::TYPE_BOOL_ARRAY,
-        ][$typeName->trimEnd('[]')->toString()] ?? Field::TYPE_OBJECT_ARRAY;
+        return $typeMap[$typeName->trimEnd('[]')->toString()] ?? Field::TYPE_OBJECT_ARRAY;
     }
 
     private static function getTypeNameFromDocComment(ReflectionProperty $property): AbstractString
     {
-        $docComment = s($property->getDocComment() ?: '');
-        $hasVarTag  = $docComment->match('/@var\s+[^\s].+/m') !== [];
+        $docComment    = s($property->getDocComment() ?: '');
+        $varTagMatches = $docComment->match('/@var\s+([^\s]+)/m');
 
-        if (!$hasVarTag && $property->isPromoted()) {
+        if ($varTagMatches !== []) {
+            return s(is_string($varTagMatches[1] ?? null) ? $varTagMatches[1] : '')->trim();
+        }
+
+        if ($property->isPromoted()) {
             $docComment = s($property->getDeclaringClass()->getConstructor()?->getDocComment() ?: $docComment->toString());
             $matches    = $docComment->match(sprintf('/@param\s+([^\s]+)\s+\$%s\b/m', preg_quote($property->getName(), '/')));
 
             if (is_string($matches[1] ?? null)) {
-                $docComment = s('@param ' . $matches[1]);
+                return s($matches[1])->trim();
             }
         }
 
-        $matches = $docComment->match('/@(var|param)\s+([^\s].+)/m');
-
-        return s(is_string($matches[2] ?? null) ? $matches[2] : '')->trim();
+        return s();
     }
 
     /**
@@ -558,5 +542,32 @@ trait CollectionTrait
         );
 
         return $fieldNames;
+    }
+
+    /**
+     * @return array<string, Field::TYPE_*>
+     */
+    private static function getTypeMap(): array
+    {
+        return [
+            TypeIdentifier::INT->value    => Field::TYPE_INT64,
+            TypeIdentifier::FLOAT->value  => Field::TYPE_FLOAT,
+            TypeIdentifier::OBJECT->value => Field::TYPE_OBJECT,
+            TypeIdentifier::BOOL->value   => Field::TYPE_BOOL,
+            TypeIdentifier::TRUE->value   => Field::TYPE_BOOL,
+            TypeIdentifier::FALSE->value  => Field::TYPE_BOOL,
+            TypeIdentifier::STRING->value => Field::TYPE_STRING,
+            'positive-int'                => Field::TYPE_INT64,
+            'non-positive-int'            => Field::TYPE_INT64,
+            'negative-int'                => Field::TYPE_INT64,
+            'non-negative-int'            => Field::TYPE_INT64,
+            'non-zero-int'                => Field::TYPE_INT64,
+            'non-empty-string'            => Field::TYPE_STRING,
+            'callable-string'             => Field::TYPE_STRING,
+            'numeric-string'              => Field::TYPE_STRING,
+            'non-falsy-string'            => Field::TYPE_STRING,
+            'literal-string'              => Field::TYPE_STRING,
+            'lowercase-string'            => Field::TYPE_STRING,
+        ];
     }
 }
