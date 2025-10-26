@@ -26,11 +26,11 @@ final readonly class Content implements CollectionInterface
     use CollectionTrait;
 
     public function __construct(
-        #[Assert\NotBlank]
         #[Field]
-        public string $id,
         #[Assert\NotBlank]
+        public string $id,
         #[Field(query: true, sort: 'asc')]
+        #[Assert\NotBlank]
         public string $title,
         #[Field(query: true, queryPriority: 1, isDefaultSortingField: true, sortPriority: 1)]
         public string $content,

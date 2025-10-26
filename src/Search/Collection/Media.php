@@ -30,15 +30,15 @@ final readonly class Media implements CollectionInterface
     use CollectionTrait;
 
     public function __construct(
-        #[Assert\NotBlank]
-        #[Assert\Choice(options: ['image', 'video'])]
         #[Field]
+        #[Assert\Choice(options: ['image', 'video'])]
+        #[Assert\NotBlank]
         public string $type,
-        #[Assert\NotBlank]
         #[Field(query: true)]
+        #[Assert\NotBlank]
         public string $title,
-        #[Assert\NotBlank]
         #[Field(query: true)]
+        #[Assert\NotBlank]
         public string $author,
         #[Field]
         public ?float $length = null,
