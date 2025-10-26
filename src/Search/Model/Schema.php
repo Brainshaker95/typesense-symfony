@@ -7,20 +7,16 @@ namespace App\Search\Model;
 use App\Search\Exception\InvalidSchemaException;
 use App\Search\Model\Support\ArrayableInterface;
 use App\Search\Model\Support\ArrayableTrait;
-use Override;
 
 use function array_any;
 use function array_key_exists;
 use function array_map;
-use function array_merge;
 use function in_array;
 use function sprintf;
 
 final class Schema implements ArrayableInterface
 {
-    use ArrayableTrait {
-        ArrayableTrait::toArray as private traitToArray;
-    }
+    use ArrayableTrait;
 
     /**
      * @param non-empty-string $name
@@ -62,35 +58,22 @@ final class Schema implements ArrayableInterface
                 ) ?: null;
             }
         },
-        public ?array $metadata = null {
+        public array|ArrayableInterface|null $metadata = null {
             get => $this->metadata;
-            set(?array $metadata) {
+            set(array|ArrayableInterface|null $metadata) {
                 if ($metadata === null) {
                     $this->metadata = null;
-
-                    return;
+                } elseif ($metadata instanceof ArrayableInterface) {
+                    $this->metadata = $metadata->toArray();
+                } else {
+                    $this->metadata = array_map(
+                        static fn (mixed $item): mixed => $item instanceof ArrayableInterface ? $item->toArray() : $item,
+                        $metadata,
+                    );
                 }
-
-                $this->metadata = array_map(
-                    static fn (mixed $item): mixed => $item instanceof ArrayableInterface
-                        ? $item->toArray()
-                        : $item,
-                    $metadata,
-                );
             }
         },
     ) {}
-
-    #[Override]
-    public function toArray(): array
-    {
-        return array_merge($this->traitToArray(), [
-            'fields' => array_map(
-                static fn (Field $field): array => $field->toArray(),
-                $this->fields,
-            ),
-        ]);
-    }
 
     /**
      * @param list<Field> $fields

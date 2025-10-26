@@ -205,13 +205,16 @@ final class Pagination implements ArrayableInterface
      */
     public function toTemplateVariables(): array
     {
-        $data      = $this->toArray();
+        /**
+         * @var TemplateVariables $variables
+         */
         $variables = [];
 
-        foreach ($data as $key => $value) {
+        foreach ($this->toArray() as $key => $value) {
             $variables[s($key)->snake()->toString()] = $value;
         }
 
+        /** @phpstan-ignore-next-line return.type */
         return $variables;
     }
 }
