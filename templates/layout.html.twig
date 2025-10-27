@@ -13,8 +13,10 @@
           --header-height: 3rem;
         }
 
-        body {
-          scroll-behavior: smooth;
+        @media (prefers-reduced-motion: no-preference) {
+          body {
+            scroll-behavior: smooth;
+          }
         }
 
         .htmx-indicator {
@@ -40,14 +42,22 @@
       <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js" defer></script>
 
       <script type="module" defer>
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const colorSchemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const motionMediaQuery = window.matchMedia('(prefers-reduced-motion: no-preference)');
 
         const setTheme = () => {
-          document.body.dataset.theme = mediaQuery.matches ? 'dark' : 'light';
+          document.body.dataset.theme = colorSchemeMediaQuery.matches ? 'dark' : 'light';
+        };
+
+        const setScrollBehavior = () => {
+          htmx.config.scrollBehavior = getComputedStyle(document.body).scrollBehavior;
         };
 
         setTheme();
-        mediaQuery.addEventListener('change', setTheme);
+        colorSchemeMediaQuery.addEventListener('change', setTheme);
+
+        setScrollBehavior();
+        motionMediaQuery.addEventListener('change', setScrollBehavior);
 
         for (const form of document.forms) {
           form.querySelector('[data-form-submit]').classList.add('sr-only');
