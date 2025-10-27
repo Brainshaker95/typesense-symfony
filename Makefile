@@ -7,7 +7,7 @@ COMPOSER := composer
 PHP_STAN := $(PWD)/vendor/bin/phpstan analyze --memory-limit=-1
 PHP_STAN_CONFIG := --configuration $(PWD)/phpstan.neon
 
-PHP_CS_FIXER := PHP_CS_FIXER_IGNORE_ENV=1 $(PWD)/vendor/bin/php-cs-fixer
+PHP_CS_FIXER := $(PWD)/vendor/bin/php-cs-fixer
 PHP_CS_FIXER_CONFIG := --config $(PWD)/.php-cs-fixer.php
 
 RECTOR := $(PWD)/vendor/bin/rector process
