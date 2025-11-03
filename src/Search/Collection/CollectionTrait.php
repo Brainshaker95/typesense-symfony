@@ -449,7 +449,7 @@ trait CollectionTrait
             }
         }
 
-        return $typeMap[$typeName->trimEnd('[]')->toString()] ?? Field::TYPE_OBJECT_ARRAY;
+        return self::getArrayTypeMap()[$typeName->trimEnd('[]')->toString()] ?? Field::TYPE_OBJECT_ARRAY;
     }
 
     private static function getTypeNameFromDocComment(ReflectionProperty $property): AbstractString
@@ -568,6 +568,33 @@ trait CollectionTrait
             'non-falsy-string'            => Field::TYPE_STRING,
             'literal-string'              => Field::TYPE_STRING,
             'lowercase-string'            => Field::TYPE_STRING,
+        ];
+    }
+
+    /**
+     * @return array<string, Field::TYPE_*>
+     */
+    private static function getArrayTypeMap(): array
+    {
+        return [
+            TypeIdentifier::INT->value    => Field::TYPE_INT64_ARRAY,
+            TypeIdentifier::FLOAT->value  => Field::TYPE_FLOAT_ARRAY,
+            TypeIdentifier::OBJECT->value => Field::TYPE_OBJECT_ARRAY,
+            TypeIdentifier::BOOL->value   => Field::TYPE_BOOL_ARRAY,
+            TypeIdentifier::TRUE->value   => Field::TYPE_BOOL_ARRAY,
+            TypeIdentifier::FALSE->value  => Field::TYPE_BOOL_ARRAY,
+            TypeIdentifier::STRING->value => Field::TYPE_STRING_ARRAY,
+            'positive-int'                => Field::TYPE_INT64_ARRAY,
+            'non-positive-int'            => Field::TYPE_INT64_ARRAY,
+            'negative-int'                => Field::TYPE_INT64_ARRAY,
+            'non-negative-int'            => Field::TYPE_INT64_ARRAY,
+            'non-zero-int'                => Field::TYPE_INT64_ARRAY,
+            'non-empty-string'            => Field::TYPE_STRING_ARRAY,
+            'callable-string'             => Field::TYPE_STRING_ARRAY,
+            'numeric-string'              => Field::TYPE_STRING_ARRAY,
+            'non-falsy-string'            => Field::TYPE_STRING_ARRAY,
+            'literal-string'              => Field::TYPE_STRING_ARRAY,
+            'lowercase-string'            => Field::TYPE_STRING_ARRAY,
         ];
     }
 }
