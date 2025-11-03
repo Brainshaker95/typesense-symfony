@@ -57,7 +57,7 @@ return new Config()
         'phpdoc_list_type'                                      => true,
         'phpdoc_order_by_value'                                 => ['annotations' => ['author', 'covers', 'coversNothing', 'dataProvider', 'depends', 'group', 'internal', 'method', 'mixin', 'property', 'property-read', 'property-write', 'requires', 'throws', 'uses']],
         'phpdoc_separation'                                     => ['groups' => [['deprecated', 'link', 'see', 'since'], ['author', 'copyright', 'license'], ['category', 'package', 'subpackage'], ['property', 'phpstan-property', 'property-read', 'phpstan-property-read', 'property-write', 'phpstan-property-write'], ['param', 'phpstan-param'], ['return', 'phpstan-return']]],
-        'phpdoc_to_comment'                                     => ['allow_before_return_statement' => true, 'ignored_tags' => ['throws']],
+        'phpdoc_to_comment'                                     => ['allow_before_return_statement' => true],
         'phpdoc_types_order'                                    => ['null_adjustment' => 'always_last', 'sort_algorithm' => 'none'],
         'php_unit_internal_class'                               => ['types' => ['abstract', 'final', 'normal']],
         'psr_autoloading'                                       => ['dir' => './src'],
