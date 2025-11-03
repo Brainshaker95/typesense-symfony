@@ -68,6 +68,8 @@ trait CollectionTrait
     }
 
     /**
+     * @return array<string, string>
+     *
      * @throws InvalidSchemaException
      */
     public static function getSearchParameters(SearchContext $searchContext): array
